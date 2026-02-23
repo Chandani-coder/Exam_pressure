@@ -37,6 +37,7 @@ class ExamAttempt(Base):
     started_at = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime, nullable=False)
     submitted_at = Column(DateTime, nullable=True)
+    analysis_unlocks_at=Column(DateTime,nullable=True)
     score = Column(Integer, nullable=True)
     is_flagged = Column(Boolean, default=False)
 
@@ -51,3 +52,10 @@ class MistakeLog(Base):
     correct_option = Column(String, nullable=False)
     mistake_type = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)

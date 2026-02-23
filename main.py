@@ -11,6 +11,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
+
+@app.get("/")
+def home():
+    return {"service":"ExamPressure",
+            "status":"live",
+            "docs":"/docs"
+            }
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
