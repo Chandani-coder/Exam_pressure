@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import  FastAPI,APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from database import SessionLocal
@@ -8,7 +8,7 @@ from services import log_mistake, generate_variation
 import random
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
-
+app=FastAPI()
 
 def get_db():
     db = SessionLocal()
@@ -67,7 +67,7 @@ def start_exam(payload: StartExamRequest, db: Session = Depends(get_db)):
     start_time = datetime.utcnow()
     end_time = start_time + timedelta(minutes=2)
 
-    exam = ExamAttempt(
+    exam = ExamAttempt( 
         user_id=payload.user_id,
         started_at=start_time,
         end_time=end_time
@@ -171,6 +171,7 @@ def submit_exam(
 
     exam.score = score
     exam.submitted_at = datetime.utcnow()
+    exam.analysis_unlocks_at=datetime.utcnow() + timedelta(hours=2)
 
     try:
         db.commit()
@@ -199,5 +200,30 @@ def today_focus(user_id: str, db: Session = Depends(get_db)):
             "status": "DEATH_SPIRAL_DETECTED",
             "difficulty": "LOW"
         }
-
     return {"status": "STABLE"}
+
+@router.get("/results/{exam_id}")
+def get_results(exam_id: int, db: Session = Depends(get_db)):
+
+    exam = db.query(ExamAttempt).filter(
+        ExamAttempt.id == exam_id
+    ).first()
+
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+
+    if not exam.submitted_at:
+        raise HTTPException(status_code=400, detail="Exam not submitted yet")
+
+    if exam.analysis_unlocks_at and datetime.utcnow() < exam.analysis_unlocks_at:
+        raise HTTPException(
+            status_code=403,
+            detail="Analysis Locked. Return later."
+        )
+
+    return {
+        "score": exam.score,
+        "flagged": exam.is_flagged
+    }
+
+app.include_router(router)
