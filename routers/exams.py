@@ -2,9 +2,10 @@ from fastapi import  FastAPI,APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from database import SessionLocal
-from models import Question, QuestionVariation, ExamAttempt
+from models import Question, QuestionVariation, ExamAttempt,User
 from schemas import StartExamRequest, SubmitExamRequest
 from services import log_mistake, generate_variation
+from auth import get_current_user
 import random
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
@@ -54,10 +55,11 @@ def seed_questions(db: Session = Depends(get_db)):
 
 
 @router.post("/start")
-def start_exam(payload: StartExamRequest, db: Session = Depends(get_db)):
+def start_exam(current_user: User = Depends(get_current_user),
+               db: Session = Depends(get_db)):
 
     active = db.query(ExamAttempt).filter(
-        ExamAttempt.user_id == payload.user_id,
+        ExamAttempt.user_id == current_user.id,
         ExamAttempt.submitted_at == None
     ).first()
 
@@ -68,7 +70,7 @@ def start_exam(payload: StartExamRequest, db: Session = Depends(get_db)):
     end_time = start_time + timedelta(minutes=2)
 
     exam = ExamAttempt( 
-        user_id=payload.user_id,
+        user_id=current_user.id,
         started_at=start_time,
         end_time=end_time
     )
