@@ -7,4 +7,3 @@ passlib
 email-validator
 pydantic
 python-dotenv
-

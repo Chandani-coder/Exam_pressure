@@ -205,10 +205,10 @@ def today_focus(user_id: str, db: Session = Depends(get_db)):
     return {"status": "STABLE"}
 
 @router.get("/results/{exam_id}")
-def get_results(exam_id: int, db: Session = Depends(get_db)):
+def get_results(exam_id: int,current_user:User=Depends(get_current_user), db: Session = Depends(get_db)):
 
     exam = db.query(ExamAttempt).filter(
-        ExamAttempt.id == exam_id
+        ExamAttempt.id == exam_id,ExamAttempt.user_id==current_user.id
     ).first()
 
     if not exam:
