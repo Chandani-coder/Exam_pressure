@@ -1,0 +1,6 @@
+name: Exam Pressure
+values:
+  - key: baseUrl
+    value: 'https://exam-pressure.onrender.com'
+    enabled: true
+    type: default

@@ -1,16 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from database import SessionLocal
 from models import User
 from auth import hash_password, verify_password, create_access_token
-from pydantic import BaseModel,EmailStr,Field
+from schemas import RegisterRequest, LoginRequest
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-class AuthRequest(BaseModel):
-    email: EmailStr
-    password: str =Field(..., min_length=6 , max_length=50)
 
 
 def get_db():
@@ -21,9 +17,12 @@ def get_db():
         db.close()
 
 
+# Register user
 @router.post("/register")
-def register(payload: AuthRequest, db: Session = Depends(get_db)):
+def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+
     existing = db.query(User).filter(User.email == payload.email).first()
+
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -38,13 +37,21 @@ def register(payload: AuthRequest, db: Session = Depends(get_db)):
     return {"message": "User registered successfully"}
 
 
+# Login user
 @router.post("/login")
-def login(payload: AuthRequest, db: Session = Depends(get_db)):
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+
     user = db.query(User).filter(User.email == payload.email).first()
 
-    if not user or not verify_password(payload.password, user.hashed_password):
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    if not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
     token = create_access_token({"sub": user.email})
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }

@@ -5,15 +5,16 @@ from models import Base
 from routers.exams import router as exams_router
 from auth_router import router as auth_router
 
-
 app = FastAPI(title="ExamPressure")
+
 origins = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://exam-pressure.onrender.com"
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
