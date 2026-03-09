@@ -1,9 +1,10 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
 from routers.exams import router as exams_router
 from auth_router import router as auth_router
-from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="ExamPressure")
 origins = [
