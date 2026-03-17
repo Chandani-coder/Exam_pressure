@@ -17,9 +17,11 @@ class SubmitExamRequest(BaseModel):
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=50)
+    full_name: str| None=None
 
 
 # Login request
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str= Field(..., min_length=6, max_length=50)
+    full_name: str| None=None

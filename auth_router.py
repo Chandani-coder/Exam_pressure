@@ -5,6 +5,7 @@ from database import SessionLocal
 from models import User
 from auth import hash_password, verify_password, create_access_token
 from schemas import RegisterRequest, LoginRequest
+from auth  import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -28,13 +29,21 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
     user = User(
         email=payload.email,
+        full_name=payload.full_name,
         hashed_password=hash_password(payload.password)
     )
 
     db.add(user)
     db.commit()
+    db.refresh(user)
 
-    return {"message": "User registered successfully"}
+    return {"user":{
+              "id":user.email,
+              "full_name":user.full_name,
+                "created_at":
+                    user.created_at    
+                    }
+            }
 
 
 # Login user
@@ -52,6 +61,18 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     token = create_access_token({"sub": user.email})
 
     return {
+        "user":{
+              "id":user.email,
+              "full_name":user.full_name,
+                "created_at":
+        user.created_at 
+        },   
         "access_token": token,
         "token_type": "bearer"
+    }
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email
     }

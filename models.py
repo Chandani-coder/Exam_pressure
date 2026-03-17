@@ -4,13 +4,15 @@ from datetime import datetime
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, nullable=True)   # ✅ added
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)  # ✅ added
+
 
 
 class Question(Base):
