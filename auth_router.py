@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from models import User
 from auth import hash_password, verify_password, create_access_token
 from schemas import RegisterRequest, LoginRequest
-from dependencies import get_current_user, get_db  
+from dependencies import get_current_user, get_db
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -26,13 +26,17 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    token = create_access_token({"sub": user.email})
+
     return {
         "user": {
-            "id": user.id,          #  was returning user.email as id, fixed to user.id
-            "email": user.email,    #  added email to response
+            "id": user.id,
+            "email": user.email,
             "full_name": user.full_name,
             "created_at": user.created_at
-        }
+        },
+        "access_token": token,
+        "token_type": "bearer"
     }
 
 
@@ -50,7 +54,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     return {
         "user": {
-            "id": user.id,          
+            "id": user.id,
             "email": user.email,
             "full_name": user.full_name,
             "created_at": user.created_at
