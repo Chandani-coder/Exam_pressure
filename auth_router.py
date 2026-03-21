@@ -1,27 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
 from models import User
 from auth import hash_password, verify_password, create_access_token
 from schemas import RegisterRequest, LoginRequest
-from auth  import get_current_user
+from dependencies import get_current_user, get_db  
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-# Register user
 @router.post("/register")
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
-
     existing = db.query(User).filter(User.email == payload.email).first()
 
     if existing:
@@ -37,19 +26,18 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    return {"user":{
-              "id":user.email,
-              "full_name":user.full_name,
-                "created_at":
-                    user.created_at    
-                    }
-            }
+    return {
+        "user": {
+            "id": user.id,          #  was returning user.email as id, fixed to user.id
+            "email": user.email,    #  added email to response
+            "full_name": user.full_name,
+            "created_at": user.created_at
+        }
+    }
 
 
-# Login user
 @router.post("/login")
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
-
     user = db.query(User).filter(User.email == payload.email).first()
 
     if not user:
@@ -61,18 +49,21 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     token = create_access_token({"sub": user.email})
 
     return {
-        "user":{
-              "id":user.email,
-              "full_name":user.full_name,
-                "created_at":
-        user.created_at 
-        },   
+        "user": {
+            "id": user.id,          
+            "email": user.email,
+            "full_name": user.full_name,
+            "created_at": user.created_at
+        },
         "access_token": token,
         "token_type": "bearer"
     }
+
+
 @router.get("/me")
 def get_me(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
-        "email": current_user.email
+        "email": current_user.email,
+        "full_name": current_user.full_name
     }
