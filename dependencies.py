@@ -37,14 +37,10 @@ def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print("DECODED PAYLOAD:", payload)
-
         email: str = payload.get("sub")
         print("EMAIL FROM TOKEN:", email)
-
         if email is None:
-            print("EMAIL IS NONE — token has no 'sub' field")
             raise credentials_exception
-
     except JWTError as e:
         print("JWT ERROR:", e)
         raise credentials_exception
@@ -64,10 +60,8 @@ def check_exam_unlocked(exam_id: int, db: Session = Depends(get_db)):
 
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
-
     if not exam.submitted_at:
         raise HTTPException(status_code=400, detail="Exam not submitted yet")
-
     if exam.analysis_unlocks_at and datetime.utcnow() < exam.analysis_unlocks_at:
         raise HTTPException(status_code=403, detail="Analysis locked")
 
