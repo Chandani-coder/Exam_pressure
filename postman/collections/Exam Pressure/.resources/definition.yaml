@@ -1,5 +1,0 @@
-$kind: collection
-name: Exam Pressure
-variables:
-  - key: baseUrl
-    value: 'https://exam-pressure.onrender.com'
