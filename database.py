@@ -20,10 +20,6 @@ if DATABASE_URL.startswith("postgres://"):
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    connect_args={
-        "sslmode": "require",
-        "connect_timeout": 10
-    }
 )
 
 # Session
