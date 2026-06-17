@@ -14,6 +14,7 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://exam-pressure.onrender.com"
+    "https://exam-pressure-kd6b.vercel.app"9
 ]
 
 app.add_middleware(
